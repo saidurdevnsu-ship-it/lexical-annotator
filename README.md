@@ -1,12 +1,13 @@
-# Lexical Annotator & Compiler Essentials 
+# Lexical Annotator & Compiler Essentials (Pure C / C++)
 
-This repository contains clean, robust implementations of foundational compiler front-end algorithms and mechanisms.
+This repository contains clean, robust implementations of foundational compiler front-end algorithms and mechanisms written in **pure C and C++**.
 
 ---
 
 ## Source Files & Programs
 
 ### 1. Simple Lexical Analyzer (`lexer.c`)
+- **Language**: Pure C (C11)
 - **Purpose**: Reads a source text file (`text1.txt`) and tokenizes it into identifiers, numbers, and operators using standard finite-state lexical analysis.
 - **Compilation**:
   ```bash
@@ -14,9 +15,14 @@ This repository contains clean, robust implementations of foundational compiler 
   ./lexer
   ```
   *(Or on MSVC: `cl lexer.c /Fe:lexer.exe`)*
+- **Run**:
+  ```powershell
+  .\lexer.exe
+  ```
 - **Input**: Reads from `text1.txt` (a sample is provided).
 
 ### 2. Dual-Buffer Input Scheme (`buffer_pairs.cpp`)
+- **Language**: Modern C++ (C++17)
 - **Purpose**: Simulates the Dragon Book two-buffer lookahead system (`bufferLeft` and `bufferRight`), each with a sentinel marker (`L` and `R`).
 - **Compilation**:
   ```bash
@@ -24,12 +30,17 @@ This repository contains clean, robust implementations of foundational compiler 
   ./buffer_pairs
   ```
   *(Or on MSVC: `cl /std:c++17 /EHsc buffer_pairs.cpp /Fe:buffer_pairs.exe`)*
+- **Run**:
+  ```powershell
+  .\buffer_pairs.exe
+  ```
 - **Usage**:
   1. Enter a buffer size (e.g., `10`).
   2. Enter an input string (e.g., `E=M*C^2`).
   3. Observe how characters alternate between the left and right buffer partitions.
 
 ### 3. Left Recursion Elimination (`left_recursion.cpp`)
+- **Language**: Modern C++ (C++17)
 - **Purpose**: Eliminates direct and indirect left recursion from Context-Free Grammars (CFGs) for top-down predictive parsers.
 - **Compilation**:
   ```bash
@@ -37,18 +48,16 @@ This repository contains clean, robust implementations of foundational compiler 
   ./left_recursion
   ```
   *(Or on MSVC: `cl /std:c++17 /EHsc left_recursion.cpp /Fe:left_recursion.exe`)*
+- **Run**:
+  ```powershell
+  .\left_recursion.exe
+  ```
 - **Usage Example (Direct Left Recursion)**:
   - Productions count: `1`
   - Input: `A=Aa|b`
   - Result:
     - `A = b A'|`
     - `A' = a A'|^` (where `^` is epsilon)
-
-### 4. Automated Test Suite (`test_suite.py`)
-- Run all edge case and regression tests with:
-  ```bash
-  python test_suite.py
-  ```
 
 ---
 

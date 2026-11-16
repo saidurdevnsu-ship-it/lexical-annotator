@@ -6,17 +6,12 @@
 *.ilk
 *.pdb
 
-# Build artifacts
+# Build directories
 build/
 bin/
 
-# Python cache
-__pycache__/
-*.pyc
-
-# Archives and extraction artifacts
+# Archives
 *.zip
-327-master/
 
 # OS metadata
 .DS_Store
