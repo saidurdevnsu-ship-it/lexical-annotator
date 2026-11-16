@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lexical Annotator & Compiler Essentials Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --id-color: #a855f7;
+      --num-color: #38bdf8;
+      --op-color: #22c55e;
+      --error: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #111827;
+      border-bottom: 1px solid var(--card-border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge {
+      font-size: 0.75rem;
+      background: #0369a1;
+      color: #fff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+    }
+    nav {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: #111827;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      background: var(--card-bg);
+      color: var(--text);
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0f172a;
+      border-color: var(--accent);
+    }
+    main {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 850px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    textarea, input, select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      font-family: "Courier New", monospace;
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      outline: none;
+    }
+    textarea:focus, input:focus, select:focus {
+      border-color: var(--accent);
+    }
+    .btn {
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: #334155;
+      color: var(--text);
+      margin-right: 0.5rem;
+    }
+    .btn-secondary:hover { background: #475569; }
+    .stats-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .stat-pill {
+      background: #0f172a;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.375rem;
+      border: 1px solid var(--card-border);
+      font-size: 0.85rem;
+    }
+    .stat-pill span { font-weight: bold; }
+    .tokens-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      max-height: 450px;
+      overflow-y: auto;
+      padding: 0.5rem;
+      background: #0f172a;
+      border-radius: 0.5rem;
+      border: 1px solid var(--card-border);
+    }
+    .token-chip {
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.85rem;
+      font-family: monospace;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .token-identifier { background: rgba(168, 85, 247, 0.15); border: 1px solid var(--id-color); color: #d8b4fe; }
+    .token-number { background: rgba(56, 189, 248, 0.15); border: 1px solid var(--num-color); color: #7dd3fc; }
+    .token-operator { background: rgba(34, 197, 94, 0.15); border: 1px solid var(--op-color); color: #86efac; }
+    .buffer-box-container {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin: 1.5rem 0;
+    }
+    .buffer-partition {
+      background: #0f172a;
+      border: 2px solid var(--card-border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      flex: 1;
+    }
+    .buffer-partition h3 {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    .buffer-slots {
+      display: flex;
+      gap: 0.4rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .buffer-slot {
+      width: 40px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: monospace;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: 1px solid var(--card-border);
+      border-radius: 0.375rem;
+      background: #1e293b;
+    }
+    .buffer-slot.sentinel-l { border-color: #eab308; color: #fde047; }
+    .buffer-slot.sentinel-r { border-color: #ec4899; color: #f472b6; }
+    .buffer-slot.filled { background: #0369a1; color: #fff; }
+    .raw-box {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .math-card {
+      background: #0f172a;
+      border-left: 4px solid var(--accent);
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 0.375rem;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <span>⚡ Lexical Annotator</span>
+      <span class="badge">Compiler Labs GUI</span>
+    </div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">
+      CS 327 Compiler Design Suite
+    </div>
+  </header>
+
+  <nav>
+    <button class="tab-btn active" onclick="switchTab('lex')">1. Lexical Analyzer</button>
+    <button class="tab-btn" onclick="switchTab('buffer')">2. Dual-Buffer Simulator</button>
+    <button class="tab-btn" onclick="switchTab('recursion')">3. Left Recursion Eliminator</button>
+  </nav>
+
+  <main>
+    <!-- TAB 1: LEXICAL ANALYZER -->
+    <div id="tab-lex" class="tab-content active">
+      <div class="grid-2">
+        <div class="card">
+          <h2>📝 Source Code Input</h2>
+          <textarea id="lex-code" rows="12" placeholder="Write or paste C code here...">int count = 100;
+float total_sum = count * 25 + 50;
+if (total_sum > 200) {
+    count = count - 1;
+}</textarea>
+          <div>
+            <button class="btn" onclick="runLexer()">Analyze Code</button>
+            <button class="btn btn-secondary" onclick="loadSampleLex()">Load Complex Sample</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>🔍 Tokenization Results</h2>
+          <div class="stats-bar">
+            <div class="stat-pill">Total: <span id="stat-total">0</span></div>
+            <div class="stat-pill" style="color: var(--id-color);">ID: <span id="stat-id">0</span></div>
+            <div class="stat-pill" style="color: var(--num-color);">Num: <span id="stat-num">0</span></div>
+            <div class="stat-pill" style="color: var(--op-color);">Op: <span id="stat-op">0</span></div>
+          </div>
+          <div id="tokens-view" class="tokens-container">
+            <p style="color: var(--text-muted); font-size: 0.9rem; padding: 1rem;">Click "Analyze Code" to generate tokens.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: BUFFER PAIRS -->
+    <div id="tab-buffer" class="tab-content">
+      <div class="grid-2">
+        <div class="card">
+          <h2>⚙️ Dual-Buffer Configuration</h2>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Buffer Size (Minimum 4):</label>
+          <input type="number" id="buf-size" value="10" min="4">
+          
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Input String:</label>
+          <input type="text" id="buf-str" value="E=M*C^2">
+
+          <button class="btn" onclick="runBuffer()">Simulate Dual-Buffer</button>
+        </div>
+
+        <div class="card">
+          <h2>📦 Interactive Buffer Representation</h2>
+          <div class="buffer-box-container">
+            <div class="buffer-partition">
+              <h3>Left Buffer Half</h3>
+              <div id="left-slots" class="buffer-slots"></div>
+            </div>
+            <div class="buffer-partition">
+              <h3>Right Buffer Half</h3>
+              <div id="right-slots" class="buffer-slots"></div>
+            </div>
+          </div>
+
+          <h3 style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">Step-by-Step Fill Steps:</h3>
+          <div id="buf-steps" class="raw-box">Click "Simulate Dual-Buffer" to view transitions.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: LEFT RECURSION -->
+    <div id="tab-recursion" class="tab-content">
+      <div class="grid-2">
+        <div class="card">
+          <h2>📐 CFG Grammar Input</h2>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Number of Productions:</label>
+          <select id="rec-count" onchange="toggleP2()">
+            <option value="1">1 Production (Direct Left Recursion)</option>
+            <option value="2">2 Productions (Indirect Left Recursion)</option>
+          </select>
+
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Production 1 (e.g. A=Aa|b):</label>
+          <input type="text" id="rec-p1" value="A=Aa|b">
+
+          <div id="p2-group" style="display: none;">
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Production 2 (e.g. A=Sc|d):</label>
+            <input type="text" id="rec-p2" value="A=Sc|d">
+          </div>
+
+          <div>
+            <button class="btn" onclick="runRecursion()">Eliminate Left Recursion</button>
+            <button class="btn btn-secondary" onclick="setPreset('E=E+T|T')">Preset: E=E+T|T</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>✨ Transformed Right-Recursive Grammar</h2>
+          <div id="rec-output">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Click "Eliminate Left Recursion" to process grammar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + name).classList.add('active');
+    }
+
+    function toggleP2() {
+      const count = document.getElementById('rec-count').value;
+      document.getElementById('p2-group').style.display = count === '2' ? 'block' : 'none';
+      if (count === '2') {
+        document.getElementById('rec-p1').value = 'S=Aa|b';
+      } else {
+        document.getElementById('rec-p1').value = 'A=Aa|b';
+      }
+    }
+
+    function setPreset(grammar) {
+      document.getElementById('rec-count').value = '1';
+      document.getElementById('p2-group').style.display = 'none';
+      document.getElementById('rec-p1').value = grammar;
+      runRecursion();
+    }
+
+    function loadSampleLex() {
+      document.getElementById('lex-code').value = `int binary_search(int arr[], int n, int target) {
+    int left = 0;
+    int right = n - 1;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (arr[mid] == target) {
+            return mid;
+        }
+    }
+    return -1;
+}`;
+      runLexer();
+    }
+
+    async function runLexer() {
+      const code = document.getElementById('lex-code').value;
+      const res = await fetch('/api/lex', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      
+      document.getElementById('stat-total').innerText = data.tokens.length;
+      document.getElementById('stat-id').innerText = data.counts.identifier || 0;
+      document.getElementById('stat-num').innerText = data.counts.number || 0;
+      document.getElementById('stat-op').innerText = data.counts.operator || 0;
+
+      const container = document.getElementById('tokens-view');
+      container.innerHTML = '';
+      data.tokens.forEach(t => {
+        const chip = document.createElement('div');
+        chip.className = 'token-chip token-' + t.type;
+        chip.innerHTML = `<span>${t.value}</span><small style="opacity:0.7">(${t.type})</small>`;
+        container.appendChild(chip);
+      });
+    }
+
+    async function runBuffer() {
+      const buf_size = parseInt(document.getElementById('buf-size').value, 10);
+      const text = document.getElementById('buf-str').value;
+      const res = await fetch('/api/buffer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ buffer_size: buf_size, text })
+      });
+      const data = await res.json();
+      document.getElementById('buf-steps').innerText = data.raw;
+
+      // Render visual buffer slots
+      const leftSlots = document.getElementById('left-slots');
+      const rightSlots = document.getElementById('right-slots');
+      leftSlots.innerHTML = '';
+      rightSlots.innerHTML = '';
+
+      const half = data.half_size || Math.ceil(buf_size / 2);
+      const finalState = data.final_left || '';
+      const finalRight = data.final_right || '';
+
+      for (let i = 0; i < half; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'buffer-slot' + (i === half - 1 ? ' sentinel-l' : (finalState[i] && finalState[i] !== ' ' ? ' filled' : ''));
+        slot.innerText = finalState[i] || (i === half - 1 ? 'L' : ' ');
+        leftSlots.appendChild(slot);
+      }
+      for (let i = 0; i < half; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'buffer-slot' + (i === half - 1 ? ' sentinel-r' : (finalRight[i] && finalRight[i] !== ' ' ? ' filled' : ''));
+        slot.innerText = finalRight[i] || (i === half - 1 ? 'R' : ' ');
+        rightSlots.appendChild(slot);
+      }
+    }
+
+    async function runRecursion() {
+      const count = parseInt(document.getElementById('rec-count').value, 10);
+      const p1 = document.getElementById('rec-p1').value;
+      const p2 = document.getElementById('rec-p2').value;
+      const res = await fetch('/api/left-recursion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count, p1, p2 })
+      });
+      const data = await res.json();
+      const output = document.getElementById('rec-output');
+
+      if (data.is_recursive) {
+        output.innerHTML = `
+          <div class="math-card" style="border-left-color: var(--op-color);">
+            <div style="color: var(--accent); font-weight: bold; margin-bottom: 0.5rem;">✅ Left Recursion Eliminated:</div>
+            <div style="font-size: 1.1rem; color: #fff; margin-bottom: 0.3rem;">${data.rule_base}</div>
+            <div style="font-size: 1.1rem; color: #fff;">${data.rule_prime}</div>
+          </div>
+          <div class="math-card">
+            <div><strong>Recursive Elements (&alpha;):</strong> ${data.alpha}</div>
+            <div><strong>Base Elements (&beta;):</strong> ${data.beta}</div>
+          </div>
+        `;
+      } else {
+        output.innerHTML = `
+          <div class="math-card" style="border-left-color: #eab308;">
+            <div style="color: #fde047; font-weight: bold;">ℹ️ No Left Recursion Detected</div>
+            <p style="margin-top: 0.5rem;">${data.message || 'Grammar does not contain direct left recursion.'}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Auto run lexer on load
+    window.onload = () => {
+      runLexer();
+      runBuffer();
+      runRecursion();
+    };
+  </script>
+</body>
+</html>
