@@ -1,63 +1,39 @@
 # Lexical Annotator & Compiler Essentials (Pure C / C++)
 
-This repository contains clean, robust implementations of foundational compiler front-end algorithms and mechanisms written in **pure C and C++**.
+This repository contains clean, robust implementations of foundational compiler front-end algorithms and mechanisms written in **pure C and C++**, along with a **native Windows GUI desktop application**.
 
 ---
 
-## Source Files & Programs
+## 🖥️ Native Desktop GUI Application (`gui.exe`)
 
-### 1. Simple Lexical Analyzer (`lexer.c`)
-- **Language**: Pure C (C11)
-- **Purpose**: Reads a source text file (`text1.txt`) and tokenizes it into identifiers, numbers, and operators using standard finite-state lexical analysis.
-- **Compilation**:
-  ```bash
-  gcc -Wall -Wextra lexer.c -o lexer
-  ./lexer
-  ```
-  *(Or on MSVC: `cl lexer.c /Fe:lexer.exe`)*
-- **Run**:
-  ```powershell
-  .\lexer.exe
-  ```
-- **Input**: Reads from `text1.txt` (a sample is provided).
+You can run the full GUI application with tabs, text editors, and buttons without touching the terminal:
 
-### 2. Dual-Buffer Input Scheme (`buffer_pairs.cpp`)
-- **Language**: Modern C++ (C++17)
-- **Purpose**: Simulates the Dragon Book two-buffer lookahead system (`bufferLeft` and `bufferRight`), each with a sentinel marker (`L` and `R`).
-- **Compilation**:
-  ```bash
-  g++ -std=c++17 -Wall buffer_pairs.cpp -o buffer_pairs
-  ./buffer_pairs
-  ```
-  *(Or on MSVC: `cl /std:c++17 /EHsc buffer_pairs.cpp /Fe:buffer_pairs.exe`)*
-- **Run**:
+- **Source**: [`gui.cpp`](gui.cpp) (Pure C++ using Win32 API)
+- **Run Directly**:
   ```powershell
-  .\buffer_pairs.exe
+  .\gui.exe
   ```
-- **Usage**:
-  1. Enter a buffer size (e.g., `10`).
-  2. Enter an input string (e.g., `E=M*C^2`).
-  3. Observe how characters alternate between the left and right buffer partitions.
+  *(Or simply double-click `gui.exe` in Windows Explorer)*
+- **Features**:
+  - **Tab 1 (Lexical Analyzer)**: Write or paste C code $\to$ click **"Analyze Code"** to see all tokens extracted.
+  - **Tab 2 (Dual-Buffer Simulator)**: Input buffer size and string $\to$ click **"Simulate Dual-Buffer"** to trace step-by-step buffer fillings.
+  - **Tab 3 (Left Recursion Eliminator)**: Input CFG production rules $\to$ click **"Eliminate Left Recursion"** to compute right-recursive forms.
 
-### 3. Left Recursion Elimination (`left_recursion.cpp`)
-- **Language**: Modern C++ (C++17)
-- **Purpose**: Eliminates direct and indirect left recursion from Context-Free Grammars (CFGs) for top-down predictive parsers.
-- **Compilation**:
-  ```bash
-  g++ -std=c++17 -Wall left_recursion.cpp -o left_recursion
-  ./left_recursion
-  ```
-  *(Or on MSVC: `cl /std:c++17 /EHsc left_recursion.cpp /Fe:left_recursion.exe`)*
-- **Run**:
-  ```powershell
-  .\left_recursion.exe
-  ```
-- **Usage Example (Direct Left Recursion)**:
-  - Productions count: `1`
-  - Input: `A=Aa|b`
-  - Result:
-    - `A = b A'|`
-    - `A' = a A'|^` (where `^` is epsilon)
+---
+
+## 💻 CLI Programs (Terminal)
+
+### 1. Simple Lexical Analyzer (`lexer.c` $\to$ `lexer.exe`)
+- **Compilation**: `cl lexer.c /Fe:lexer.exe`
+- **Run**: `.\lexer.exe` (reads from `text1.txt`)
+
+### 2. Dual-Buffer Input Scheme (`buffer_pairs.cpp` $\to$ `buffer_pairs.exe`)
+- **Compilation**: `cl /std:c++17 /EHsc buffer_pairs.cpp /Fe:buffer_pairs.exe`
+- **Run**: `.\buffer_pairs.exe`
+
+### 3. Left Recursion Elimination (`left_recursion.cpp` $\to$ `left_recursion.exe`)
+- **Compilation**: `cl /std:c++17 /EHsc left_recursion.cpp /Fe:left_recursion.exe`
+- **Run**: `.\left_recursion.exe`
 
 ---
 
