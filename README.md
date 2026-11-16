@@ -1,4 +1,4 @@
-# Lexical Annotator & Compiler Essentials (CS 327)
+# Lexical Annotator & Compiler Essentials 
 
 This repository contains clean, robust implementations of foundational compiler front-end algorithms and mechanisms.
 
