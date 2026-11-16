@@ -1,0 +1,23 @@
+# Compiled binaries and objects
+*.obj
+*.o
+*.exe
+*.out
+*.ilk
+*.pdb
+
+# Build artifacts
+build/
+bin/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Archives and extraction artifacts
+*.zip
+327-master/
+
+# OS metadata
+.DS_Store
+Thumbs.db

@@ -1,0 +1,5 @@
+int count = 100;
+float total_sum = count * 25 + 50;
+if (total_sum > 200) {
+    count = count - 1;
+}
